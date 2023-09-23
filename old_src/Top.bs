@@ -1,0 +1,56 @@
+-- TOPMODULE=mkTop make b_compile
+package Top(mkTop, ITop(..), mkSim) where
+
+import Deserializer
+import Serializer
+
+type FCLK = 25_000_000
+type BAUD = 9_600
+
+interface ITop = 
+  ftdi_rxd    ::  Bit 1            {-# always_ready #-}
+  led         ::  Bit 8            {-# always_ready #-}
+  ftdi_txd    :: (Bit 1) -> Action {-# always_enabled, always_ready #-}
+
+{-# properties mkTop={verilog} #-}
+mkTop :: Module (ITop)
+mkTop = do
+
+  fileHandle <- openFile "compile.log" WriteMode 
+
+  deserializer :: (IDeserializer FCLK BAUD) <- mkDeserialize fileHandle
+  serializer :: (ISerializer FCLK BAUD) <- mkSerialize fileHandle
+  ftdiBitIn  :: Wire(Bit 1)       <- mkBypassWire
+  rxReg      :: Reg(Bit 8) <- mkReg(0)
+  messageM $ "Hallo!!" + (realToString 5)
+
+  addRules $
+    rules
+      when True ==>
+        do
+          rxReg := deserializer.get
+          serializer.putBit8 $ deserializer.get
+      
+      when True ==>
+        deserializer.putBitIn ftdiBitIn
+
+  return $
+    interface ITop
+    {ftdi_rxd = serializer.bitLineOut
+    ;led = rxReg
+    ;ftdi_txd bitIn = ftdiBitIn := bitIn}
+
+mkSim :: Module Empty
+mkSim = do
+  -- count :: Reg(UInt 3) <- mkReg(0)
+  count :: Reg(UInt 3) <- mkReg(0)
+  addRules $
+    rules
+      "count" : when True ==> action
+        count := unpack ((1'b1) ++ (pack count)[2:1])
+        $display count
+      "end sim" : when (count == 6) ==> action
+        $finish
+
+  return $
+    interface Empty

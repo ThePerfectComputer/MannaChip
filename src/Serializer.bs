@@ -1,0 +1,52 @@
+package Serializer(
+  mkSerialize,
+  ISerializer(..),
+  State(..)) 
+  where
+
+import ClkDivider
+import State
+
+serialize :: State -> Bit 8 -> Bit 1
+serialize ftdiState dataReg =
+    case ftdiState of
+        START    -> 1'b0
+        (DATA n) -> dataReg[n:n]
+        _        -> 1'b1
+
+interface (ISerializer :: # -> # -> *) clkFreq baudRate = 
+  putBit8    :: (Bit 8) -> Action {-# always_enabled, always_ready #-}
+  bitLineOut ::  Bit 1            {-# always_ready #-}
+
+mkSerialize :: Handle -> Module (ISerializer clkFreq baudRate)
+mkSerialize fileHandle = do
+
+  ftdiTxOut :: Wire(Bit 1) <- mkBypassWire
+  dataReg  :: Reg(Bit 8) <- mkReg(0)
+  ftdiState <- mkReg(IDLE)
+  clkDivider :: (ClkDivider (TDiv clkFreq baudRate)) <- mkClkDivider fileHandle
+
+  addRules $
+    rules
+      {-# ASSERT fire when enabled #-}
+      "ADVANCE UART STATE WHEN NOT IDLE" : when 
+        (ftdiState /= IDLE), 
+        (clkDivider.isAdvancing) ==>
+        do
+          ftdiState := ftdiStateNext ftdiState
+
+      {-# ASSERT fire when enabled #-}
+      "BIT LINE" : when True ==>
+        do
+          ftdiTxOut := serialize ftdiState dataReg
+
+  return $
+    interface ISerializer
+      putBit8  bit8Val = 
+        do
+          clkDivider.reset
+          dataReg := bit8Val 
+          ftdiState := ftdiStateNext ftdiState
+        when (ftdiState == IDLE)
+      bitLineOut = ftdiTxOut
+    
