@@ -11,6 +11,7 @@ import State::*;
 
 interface IDeserializer#(numeric type clkFreq, numeric type baudRate);
     method Bit#(8) get();
+    (* always_enabled , always_ready  *)
     method Action putBitIn(Bit#(1) bitIn);
 endinterface
 
