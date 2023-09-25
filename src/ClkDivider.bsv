@@ -20,6 +20,7 @@ module mkClkDivider#(Handle fileHandle)(ClkDivider#(hi));
     hPutStr(fileHandle, msg);
     hPutStr(fileHandle, genModuleName);
 
+    (* fire_when_enabled, no_implicit_conditions *)
     rule tick;
         // $display(counter);
         counter <= (counter == hi_value) ? 0 : counter + 1;

@@ -16,7 +16,9 @@ function Bit#(1) serialize(State state, Bit#(8) dataReg);
 endfunction
 
 interface ISerializer#(numeric type clkFreq, numeric type baudRate);
+    (* always_enabled , always_ready  *)
     method Action putBit8(Bit#(8) bit8Val);
+    (* always_ready  *)
     method Bit#(1) bitLineOut();
 endinterface
 
