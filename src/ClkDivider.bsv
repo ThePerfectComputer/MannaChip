@@ -21,7 +21,7 @@ module mkClkDivider#(Handle fileHandle)(ClkDivider#(hi));
     hPutStr(fileHandle, genModuleName);
 
     rule tick;
-        $display(counter);
+        // $display(counter);
         counter <= (counter == hi_value) ? 0 : counter + 1;
     endrule
 

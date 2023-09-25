@@ -36,3 +36,6 @@ TOPMODULE=mkTop make v_compile
 
 # TODO
  - [ ] debug UART accuracy
+
+# Notable Reference Files
+``/Users/yehowshuaimmanuel/git/bsc/testsuite/bsc.bsv_examples/cpu/FiveStageCPUQ3sol.bsv``
