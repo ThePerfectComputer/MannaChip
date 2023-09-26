@@ -55,22 +55,23 @@ module mkTop(ITop);
 	endmethod
 endmodule
 
-// module mkSim(Empty);
-// (actionvalue
-//    Reg#(UInt#(3)) count();
-//    mkReg#(0) the_count(count);
-//    addRules(rules
-// 	      rule count (True);
-// 		 count <= unpack({1'b1, (pack(count))[2:1]});
-// 		 ($display)(count);
-// 	      endrule: count
-// 	      rule end_sim (count == 6);
-// 		 ($finish)();
-// 	      endrule: end_sim
-// 	    endrules);
-//    return(interface Empty
-// 	  endinterface: Empty);
-//  endactionvalue);
-// endmodule: mkSim
+module mkSim(Empty);
+
+    // Define a 3-bit register named count
+    Reg#(UInt#(3)) count <- mkReg(0);
+
+    // Rule to update and display the count
+    rule tick (True);
+        count <= unpack({1'b1, (pack(count))[2:1]});
+        ($display)(count);
+    endrule
+
+    // Rule to finish the simulation when count reaches 6
+    rule end_sim (count == 6);
+        ($finish)();
+    endrule
+
+endmodule
+
 
 endpackage
