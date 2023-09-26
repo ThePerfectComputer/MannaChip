@@ -26,8 +26,8 @@ endinterface
 module mkTop(ITop);
    Handle fileHandle <- openFile("compile.log", WriteMode);
    IDeserializer # (FCLK, BAUD) deserializer  <- mkDeserialize(fileHandle);
-   ISerializer   # (FCLK, BAUD)  serializer   <- mkSerialize(fileHandle);
-   Core          # (FCLK)             core    <- mkCore();
+   ISerializer   # (FCLK, BAUD)    serializer <- mkSerialize(fileHandle);
+   Core          # (FCLK)               core  <- mkCore();
 
    Reg#(Bit#(8))  ledReg 	<- mkReg(0);
 

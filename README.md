@@ -17,7 +17,7 @@ You'll need to install:
 
 # Programming the ULX3S
 ```bash
-make prog
+make fpga
 # You may need the following line to set your screen device config
 # to one parity and one stop bit. Tested working on MacOS, should
 # work on Linux.
