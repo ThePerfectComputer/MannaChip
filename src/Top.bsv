@@ -6,40 +6,40 @@ export ITop(..);
 // export mkSim;
 
 import Deserializer::*;
-
+import Core::*;
 import Serializer::*;
+import BRAM::*;
 
 typedef 25000000 FCLK;
-
 typedef 9600 BAUD;
 
 interface ITop;
     (* always_ready  *)
-    method Bit#(1) ftdi_rxd();
+    method Bit # (1) ftdi_rxd();
     (* always_ready  *)
-    method Bit#(8) led();
+    method Bit # (8) led();
     (* always_enabled , always_ready  *)
     method Action ftdi_txd(Bit#(1) bitIn);
-endinterface: ITop
+endinterface
 
 (* synthesize *)
 module mkTop(ITop);
    Handle fileHandle <- openFile("compile.log", WriteMode);
-   IDeserializer#(FCLK, BAUD) deserializer  <- mkDeserialize(fileHandle);
-   ISerializer#(FCLK, BAUD) serializer 	    <- mkSerialize(fileHandle);
+   IDeserializer # (FCLK, BAUD) deserializer  <- mkDeserialize(fileHandle);
+   ISerializer   # (FCLK, BAUD)  serializer   <- mkSerialize(fileHandle);
+   Core          # (FCLK)             core    <- mkCore();
 
-   Wire#(Bit#(1)) ftdiBitIn <- mkBypassWire;
-   Reg#(Bit#(8)) rxReg 	    <- mkReg(0);
+   Reg#(Bit#(8))  ledReg 	<- mkReg(0);
 
    messageM("Hallo!!" + realToString(5));
 
-    rule loopback;
-		rxReg <= deserializer.get;
-		serializer.putBit8(deserializer.get);
+    rule attach_core_outputs;
+		ledReg <= core.get_led;
+		serializer.putBit8(core.get_char);
     endrule
 
-    rule txOut;
-		deserializer.putBitIn(ftdiBitIn);
+    rule attach_core_inputs;
+		core.put_char(deserializer.get);
     endrule
 
 	method Bit#(1) ftdi_rxd;
@@ -47,15 +47,16 @@ module mkTop(ITop);
 	endmethod
 
 	method Bit#(8) led;
-		return rxReg;
+		return ledReg;
 	endmethod
 
 	method Action ftdi_txd(Bit#(1) bitIn);
-		ftdiBitIn <= bitIn;
+		deserializer.putBitIn(bitIn);
 	endmethod
 endmodule
 
 module mkSim(Empty);
+	BRAM_Configure cfg = defaultValue;
 
     // Define a 3-bit register named count
     Reg#(UInt#(3)) count <- mkReg(0);
@@ -70,7 +71,6 @@ module mkSim(Empty);
     rule end_sim (count == 6);
         ($finish)();
     endrule
-
 endmodule
 
 

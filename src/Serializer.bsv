@@ -23,7 +23,7 @@ interface ISerializer#(numeric type clkFreq, numeric type baudRate);
 endinterface
 
 module mkSerialize#(Handle fileHandle)(ISerializer#(clkFreq, baudRate));
-    Wire#(Bit#(1)) ftdiTxOut <- mkBypassWire();
+    Wire#(Bit#(1)) ftdiTxOut <- mkDWire(1);
     Reg#(Bit#(8)) dataReg <- mkReg(0);
     Reg#(State) ftdiState <- mkReg(IDLE);
 
