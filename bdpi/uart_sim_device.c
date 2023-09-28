@@ -2,6 +2,22 @@
 #include <termios.h>
 #include <unistd.h>
 #include <stdio.h>
+#include <signal.h>
+#include <stdbool.h>
+
+static volatile bool ctrl_c_received = false;
+
+void sigint_handler(int sig_num) {
+    ctrl_c_received = true;
+}
+
+void setup_sigint_handler() {
+    signal(SIGINT, sigint_handler);
+}
+
+bool was_ctrl_c_received() {
+    return ctrl_c_received;
+}
 
 static struct termios oldt, newt;
 
@@ -23,6 +39,11 @@ void restore_terminal() {
 char get_char_from_terminal() {
     char c = getchar();
     return c;
+}
+
+void write_char_to_terminal(char chr) {
+    putchar(chr);
+    fflush(stdout);
 }
 
 int is_char_available() {

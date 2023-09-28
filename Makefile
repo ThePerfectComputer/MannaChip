@@ -21,23 +21,12 @@
 # ================================================================
 # Please modify the following for your installation and setup
 
-# Directory containing this tutorial
-TUTORIAL ?= ..
-
-# Set this to the command that invokes your Verilog simulator
-# V_SIM ?= verilator
-# V_SIM ?= iverilog
-# V_SIM ?= cvc
-# V_SIM ?= cver
-# V_SIM ?= vcsi
-# V_SIM ?= vcs
-# V_SIM ?= modelsim
-# V_SIM ?= ncsim
-# V_SIM ?= ncverilog
-
 ifeq ($(V_SIM),verilator)
   V_SIM += -Xv --no-timing
 endif
+
+BDPI_SRC = bdpi/uart_sim_device.c
+BDPI_OBJ = bdpi/uart_sim_device.o
 
 # ================================================================
 # You should not have to change anything below this line
@@ -66,6 +55,9 @@ BSC_COMP_FLAGS += \
 		-show-schedule \
 		+RTS -K128M -RTS  -show-range-conflict \
 		$(BSC_COMP_FLAG1)  $(BSC_COMP_FLAG2)  $(BSC_COMP_FLAG3)
+
+$(BDPI_OBJ): $(BDPI_SRC)
+	gcc -c -o $@ $< -I $(BSC_DIR)/include
 
 BSC_LINK_FLAGS += -keep-fires
 
@@ -112,9 +104,9 @@ b_compile:
 	@echo Compiling for Bluesim finished
 
 .PHONY: b_link
-b_link:
+b_link: $(BDPI_OBJ)
 	@echo Linking for Bluesim ...
-	bsc -e $(TOPMODULE) -sim -o $(B_SIM_EXE) $(B_SIM_DIRS) $(BSC_LINK_FLAGS) $(BSC_PATHS)
+	bsc -e $(TOPMODULE) -sim -o $(B_SIM_EXE) $(B_SIM_DIRS) $(BSC_LINK_FLAGS) $(BSC_PATHS) $(BDPI_OBJ)
 	@echo Linking for Bluesim finished
 
 .PHONY: b_sim

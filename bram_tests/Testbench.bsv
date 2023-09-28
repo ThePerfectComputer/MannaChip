@@ -19,7 +19,7 @@ module mkTestbench();
     cfg.allowWriteResponseBypass = False;
    //  BRAM2Port#(Bit#(8), Bit#(8)) dut0 <- mkBRAM2Server(cfg);
     cfg.loadFormat = tagged Hex "bram2.txt";
-    BRAM2Port#(Bit#(8), Bit#(8)) dut1 <- mkBRAM2Server(cfg);
+    BRAM1Port#(Bit#(8), Bit#(8)) dut1 <- mkBRAM1Server(cfg);
 
     rule counting;
       count <= count + 1;
@@ -31,21 +31,21 @@ module mkTestbench();
          delay(10);
          action
             $display("count = %d", count);
-            dut1.portB.request.put(makeRequest(False, 0, 0));
+            dut1.portA.request.put(makeRequest(False, 0, 0));
          endaction
          action 
             $display("count = %d", count);
-            $display("dut1read[0] = %x", dut1.portB.response.get);
-            dut1.portB.request.put(makeRequest(False, 1, 0));
+            $display("dut1read[0] = %x", dut1.portA.response.get);
+            dut1.portA.request.put(makeRequest(False, 1, 0));
          endaction
          action 
             $display("count = %d", count);
-            $display("dut1read[1] = %x", dut1.portB.response.get);
-            dut1.portB.request.put(makeRequest(False, 2, 0));
+            $display("dut1read[1] = %x", dut1.portA.response.get);
+            dut1.portA.request.put(makeRequest(False, 2, 0));
          endaction
          action 
             $display("count = %d", count);
-            $display("dut1read[2] = %x", dut1.portB.response.get);
+            $display("dut1read[2] = %x", dut1.portA.response.get);
          endaction
          delay(100);
          action
