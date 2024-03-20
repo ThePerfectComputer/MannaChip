@@ -69,8 +69,8 @@ endmodule
 module mkSim(Empty);
 	BRAM_Configure cfg = defaultValue;
 
-    // Define a 3-bit register named count
-    Reg#(UInt#(3)) count        <- mkReg(0);
+  // Define a 3-bit register named count
+  Reg#(UInt#(3)) count        <- mkReg(0);
 	Reg#(Bool) init_C_functions <- mkReg(False);
 	Core#(FCLK)           core  <- mkCore();
 
@@ -80,6 +80,8 @@ module mkSim(Empty);
 		init_C_functions <= True;
 	endrule
 
+    // implicit true - should always fire - effective making
+    // a loopback
     rule core_char_device_o;
       write_char_to_terminal(core.get_char);
     endrule
