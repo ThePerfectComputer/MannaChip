@@ -81,10 +81,11 @@ module mkSim(Empty);
 	endrule
 
     rule core_char_device_o;
-		write_char_to_terminal(core.get_char);
+      write_char_to_terminal(core.get_char);
     endrule
+
     rule core_char_device_i(is_char_available() == 1);
-		core.put_char(get_char_from_terminal());
+      core.put_char(get_char_from_terminal());
     endrule
 
     // Rule to finish the simulation when count reaches 6

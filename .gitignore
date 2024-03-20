@@ -8,6 +8,8 @@
 # files generated from building/simulating core
 compile.log
 build_v
+build_b_sim
+mkSim_b_sim
 verilog_RTL
 
 # generated experiment outputs
