@@ -1,2 +1,19 @@
 *.vcd
 *.so
+
+# bluespec files
+*.bo
+*.ba
+
+# files generated from building/simulating core
+compile.log
+build_v
+verilog_RTL
+
+# generated experiment outputs
+experiments/bram/*.cxx
+experiments/bram/*.h
+experiments/bram/simBRAM
+
+*.o
+.vscode

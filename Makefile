@@ -140,9 +140,9 @@ v_compile:
 	@echo Compiling for Verilog finished
 
 .PHONY: v_link
-v_link:
+v_link: $(BDPI_OBJ)
 	@echo Linking for Verilog sim ...
-	bsc -e $(TOPMODULE) -verilog -o ./$(V_SIM_EXE) $(V_DIRS) -vsim $(V_SIM)  verilog_RTL/$(TOPMODULE).v
+	bsc -e $(TOPMODULE) -verilog -o ./$(V_SIM_EXE) $(V_DIRS) -vsim $(V_SIM)  verilog_RTL/$(TOPMODULE).v 
 	@echo Linking for Verilog sim finished
 
 .PHONY: v_sim

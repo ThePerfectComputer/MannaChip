@@ -8,8 +8,18 @@ Just as "man does not live by bread alone, but by every word that proceeds from 
 ``TOPMODULE=mkTop make v_compile`` to generate verilog. The generated verilog can
 be found in the ``verilog_RTL/`` folder.
 
+# Status
+Admittedly, not very far. Perhaps one could say we've got the beginnings 
+of what would make for LED and UART controllers.
+
 # Dependencies
-You'll need to install:
+## Linux
+Running `nix-shell` should *just work* on Linux. To be fair, haven't
+tested this yet.
+
+## MacOS
+Upstream nix recipes need to be adjusted a bit to work on MacOS, so
+for now do:
 1. [Yosys](https://github.com/YosysHQ/yosys) at git commit: 7ce5011c24b
 2. [nextpnr-0.4-36-gc8406b71](https://github.com/YosysHQ/nextpnr)
 3. [PrjTrellis](https://github.com/YosysHQ/prjtrellis) at git commit: 1.2.1-22-g35f5aff
@@ -26,16 +36,20 @@ screen /dev/tty.usbserial-K00027 9600
 ```
 
 # Simulation
+## Main Chip Core
 TODO
 
-# Generating Verilog
+## Experiments
+See experiments README.
 
+# Generating Verilog
 ```bash
 TOPMODULE=mkTop make v_compile
 ```
 
 # TODO
  - [ ] debug UART accuracy
+       - clk divider should be frequency matched
 
 # Notable Reference Files
 ``/Users/yehowshuaimmanuel/git/bsc/testsuite/bsc.bsv_examples/cpu/FiveStageCPUQ3sol.bsv``
