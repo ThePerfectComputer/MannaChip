@@ -37,7 +37,15 @@ screen /dev/tty.usbserial-K00027 9600
 
 # Simulation
 ## Main Chip Core
-TODO
+The following command will simulate the UART loopback
+by having the bluespec sources call some C code that
+commandeers the tty, disables echo, exposes the tty write
+buffer to bluespec(what the user types), and exposes
+a buffer bluespec can use to write to terminal.
+
+```bash
+TOPMODULE=mkSim make b_all
+```
 
 ## Experiments
 See experiments README.
