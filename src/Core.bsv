@@ -21,12 +21,13 @@ module mkCore(Core#(clkFreq));
     Real val = fromInteger(clkFreqInt);
     messageM("mkCore clkFreq" + realToString(val));
 
-    rule second_counter;
+    Bool pulse_every_second = counter == clkFreqUInt;
+
+    rule count;
         counter <= (counter == clkFreqUInt) ? 0 : counter + 1;
-        tick_second <= True;
     endrule
 
-    rule update_led(tick_second);
+    rule counting_led(pulse_every_second);
         led_out <= led_out + 1;
     endrule
 
@@ -37,7 +38,9 @@ module mkCore(Core#(clkFreq));
 		return led_out;
 	endmethod
     method Action put_char(Bit#(8) byte_in);
-		uart_out <= byte_in;
+        Bit#(8) value = byte_in;
+		uart_out <= value;
+        // led_out <= value;
 	endmethod
 endmodule
 

@@ -43,15 +43,17 @@ module mkTop(ITop);
    messageM("Hallo!!" + realToString(5));
 
 	// connect up core device
-    rule core_led_o;
-		persist_led <= core.get_led;
-    endrule
-    rule core_char_device_o;
-		serializer.putBit8(core.get_char);
-    endrule
-    rule core_char_device_i;
-		core.put_char(deserializer.get);
-    endrule
+  rule core_led_o;
+    persist_led <= core.get_led;
+  endrule
+
+  rule core_char_device_o;
+    serializer.putBit8(core.get_char);
+  endrule
+
+  rule core_char_device_i;
+    core.put_char(deserializer.get);
+  endrule
 
 	// output methods
 	method Bit#(1) ftdi_rxd;

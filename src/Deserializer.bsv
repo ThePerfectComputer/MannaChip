@@ -41,6 +41,8 @@ module mkDeserialize#(Handle fileHandle)(IDeserializer#(clkFreq, baudRate));
         shiftReg <= {ftdiRxIn, shiftReg[7:1]};
     endrule
 
+    // an invariant enforced here is we can't call this method
+    // until shift reg is valid
     method Bit#(8) get() if (ftdiState == STOP && clkDivider.isAdvancing());
         return shiftReg;
     endmethod
