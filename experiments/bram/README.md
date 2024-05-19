@@ -11,7 +11,7 @@ values in TCL.
 ## Without TCL
 
 ```bash
-bsc -sim -u -g mkTestbench Testbench.bsv; bsc -sim -e mkTestbench -o simBRAM;
+bsc -sim -u -g mkTestbench Testbench.bs; bsc -sim -e mkTestbench -o simBRAM;
 ./simBRAM -V
 ```
 
