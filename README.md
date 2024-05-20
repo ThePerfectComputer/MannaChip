@@ -61,8 +61,8 @@ TOPMODULE=mkTop make v_compile
        - clk divider should be frequency matched
  - [ ] move to JoyOfHardware
  - [ ] port in [PPC_Formal](https://github.com/JoyOfHardware/PPC_Formal)
-       - [ ] create I and D caches
-       - [ ] try to optimize decoder
+      - [ ] create I and D caches
+      - [ ] try to optimize decoder
 
 # Notable Reference Files
 ``/Users/yehowshuaimmanuel/git/bsc/testsuite/bsc.bsv_examples/cpu/FiveStageCPUQ3sol.bsv``
