@@ -1,7 +1,8 @@
 # MannaChip
 
 ## Introduction:
-Manna was the miraculous food provided by God requiring no effort on behalf of the Israelites. In a similar vein, the MannaChip processor delivers groundbreaking performance, necessitating minimal intervention on the developer's or user's part.
+Manna was the miraculous food provided by God requiring no effort on behalf of the Israelites. In a similar vein, the POWER3.0 compliant MannaChip 
+processor delivers groundbreaking performance, necessitating minimal intervention on the developer's or user's part.
 
 Just as "man does not live by bread alone, but by every word that proceeds from the mouth of God," this chip thrives on every instruction word you provide. It's not just about raw computational power, but the synergy between user input and hardware optimization.
 

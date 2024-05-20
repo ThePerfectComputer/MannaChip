@@ -33,7 +33,7 @@ BDPI_OBJ = bdpi/uart_sim_device.o
 
 RESOURCES_DIR ?= $(TUTORIAL)/Resources
 
-TOPLANG ?= BSV
+TOPLANG ?= BH
 
 ifeq ($(TOPLANG),BSV)
   SRC_EXT=bsv
@@ -43,7 +43,7 @@ else
   SRC_EXT=TOPLANG_NOT_DEFINED
 endif
 
-TOPFILE   ?= src/Top.$(SRC_EXT)
+TOPFILE   ?= bs/Top.$(SRC_EXT)
 TOPMODULE ?= mkTop
 
 BSC_COMP_FLAGS += \
@@ -61,7 +61,7 @@ $(BDPI_OBJ): $(BDPI_SRC)
 
 BSC_LINK_FLAGS += -keep-fires
 
-BSC_PATHS = -p src/:+
+BSC_PATHS = -p bs/:bsv/:+
 
 .PHONY: help
 help:

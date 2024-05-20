@@ -1,0 +1,40 @@
+package Core(Core(..), mkCore) where
+
+import ClkDivider
+import Prelude
+
+interface (Core :: # -> *) clkFreq = {
+  getChar :: Bit 8
+ ;getLed  :: Bit 8
+ ;putChar :: Bit 8 -> Action
+ }
+
+mkCore :: Module (Core clkFreq)
+mkCore = do
+  counter    :: Reg (UInt (TLog clkFreq)) <- mkReg 0
+  tickSecond :: Wire Bool    <- mkDWire False
+  uartOut    :: Wire (Bit 8) <- mkWire;
+  ledOut     :: Reg (Bit 8)  <- mkReg 0
+
+  let clkFreqInt :: Integer = valueOf clkFreq
+  let clkFreqUInt :: UInt (TLog clkFreq) = fromInteger clkFreqInt
+  let val :: Real = fromInteger clkFreqInt
+
+  messageM $ "mkCore clkFreq" + realToString val
+
+  let pulseEverySecond :: Bool = (counter == clkFreqUInt)
+
+  addRules $
+    rules
+      "count" : when True ==>
+        counter := if (counter == clkFreqUInt) then 0 else (counter + 1)
+      "countingLed" : when pulseEverySecond ==>
+        ledOut := ledOut + 1
+
+  return $
+    interface Core
+     getChar = uartOut
+     getLed  = ledOut
+     putChar byteIn =
+       do
+         uartOut := byteIn
