@@ -27,12 +27,12 @@ mkDeserialize fileHandle = do
       "IDLE" : when (ftdiState == IDLE), (ftdiRxIn == 0) ==>
         do
           clkDivider.reset
-          ftdiState := ftdiStateNext ftdiState
+          ftdiState := ftdiState' ftdiState
 
       {-# ASSERT fire when enabled #-}
       "NOT IDLE" : when (ftdiState /= IDLE), (clkDivider.isAdvancing) ==>
         do
-          ftdiState := ftdiStateNext ftdiState
+          ftdiState := ftdiState' ftdiState
 
       {-# ASSERT fire when enabled #-}
         "SAMPLING" : when 

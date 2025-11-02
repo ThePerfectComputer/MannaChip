@@ -1,2 +1,25 @@
 *.vcd
 *.so
+
+# bluespec files
+*.bo
+*.ba
+
+# files generated from building/simulating core
+compile.log
+build_v
+build_b_sim
+mkSim_b_sim
+verilog_RTL
+
+# files generated for FPGA ULX3s implementation
+ulx3s_fpga/mkTop.d
+ulx3s_fpga/mkTop.json
+
+# generated experiment outputs
+experiments/bram/*.cxx
+experiments/bram/*.h
+experiments/bram/simBRAM
+
+*.o
+.vscode

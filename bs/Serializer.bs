@@ -33,7 +33,7 @@ mkSerialize fileHandle = do
         (ftdiState /= IDLE), 
         (clkDivider.isAdvancing) ==>
         do
-          ftdiState := ftdiStateNext ftdiState
+          ftdiState := ftdiState' ftdiState
 
       {-# ASSERT fire when enabled #-}
       "BIT LINE" : when True ==>
@@ -46,7 +46,7 @@ mkSerialize fileHandle = do
         do
           clkDivider.reset
           dataReg := bit8Val 
-          ftdiState := ftdiStateNext ftdiState
+          ftdiState := ftdiState' ftdiState
         when (ftdiState == IDLE)
       bitLineOut = ftdiTxOut
     
