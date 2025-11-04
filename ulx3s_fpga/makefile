@@ -5,10 +5,10 @@ IDCODE ?= 0x41113043 # 85f
 
 all: prog
 
-../verilog_RTL/$(TOPMODULE).v: ../src/Top.bsv
-	V_SIM=verilator TOPMODULE=$(TOPMODULE) make -C ../ v_compile
+../build/$(TOPMODULE).v: ../bs/Top.bs
+	V_SIM=verilator TOPMODULE=$(TOPMODULE) make -C ../ verilog
 
-$(TOPMODULE).json: ../verilog_RTL/$(TOPMODULE).v
+$(TOPMODULE).json: ../build/$(TOPMODULE).v
 	yosys \
 		-p "synth_ecp5 -top $(TOPMODULE) -json $@" \
 		-E $(TOPMODULE).d \
