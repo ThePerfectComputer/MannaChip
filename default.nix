@@ -22,4 +22,4 @@ let
     src = ./.;
   };
 in
-flake.shellNix
+flake.defaultNix
