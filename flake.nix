@@ -1,7 +1,10 @@
 {
   inputs = {
     nixpkgs = {
+      # To ensure the chosen unstable rev has darwin cached pick a rev from a few days ago from https://hydra.nixos.org/job/nixos/trunk-combined/tested#tabs-status
+      # `nix flake update --override-input nixpkgs "github:nixos/nixpkgs?rev=REVHERE" --commit-lock-file`
       url = "github:NixOS/nixpkgs/nixos-unstable";
+      #url = "https://channels.nixos.org/nixpkgs-25.05-darwin/nixexprs.tar.xz";
     };
     utils.url = "github:numtide/flake-utils";
     flake-compat = {
