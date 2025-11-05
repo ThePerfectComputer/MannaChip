@@ -15,7 +15,7 @@ $(BUILD):
 
 # === Bluesim ===
 $(BDPI_OBJ): $(BDPI_SRC) | $(BUILD)
-	gcc -c -fPIC $< -o $@
+	$(CC) -c -fPIC $< -o $@
 
 $(BUILD)/mkSim.bo: $(TOP_FILE) | $(BUILD)
 	$(BSC) $(BSV_FLAGS) -sim -u -g $(TOP_MODULE) $(TOP_FILE)
@@ -25,7 +25,7 @@ sim: $(BDPI_OBJ) $(BUILD)/mkSim.bo
 
 # === Verilog + DPI-C ===
 $(DPI_LIB): $(BDPI_SRC) | $(BUILD)
-	gcc -shared -fPIC -o $@ $<
+	$(CC) -shared -fPIC -o $@ $<
 
 verilog: $(DPI_LIB)
 	$(BSC) $(VERILOG_FLAGS) $(TOP_FILE)
