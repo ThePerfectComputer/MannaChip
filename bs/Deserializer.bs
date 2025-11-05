@@ -7,19 +7,18 @@ package Deserializer(
 import ClkDivider
 import State
 
-
-interface (IDeserializer :: # -> # -> *) clkFreq baudRate =
+interface (IDeserializer :: # -> *) clkPeriod =
   get         ::  Bit 8
   putBitIn    :: (Bit 1) -> Action {-# always_enabled, always_ready #-}
 
-mkDeserialize :: Handle -> Module (IDeserializer clkFreq baudRate)
+mkDeserialize :: Handle -> Module (IDeserializer clkPeriod)
 mkDeserialize fileHandle = do
   ftdiRxIn :: Wire(Bit 1) <- mkBypassWire
   ftdiRxInSynchronized :: Reg(Bit 1) <- mkReg(1)
   shiftReg :: Reg(Bit 8) <- mkReg(0)
   ftdiState <- mkReg(IDLE)
 
-  clkDivider :: (ClkDivider (TDiv clkFreq baudRate)) <- mkClkDivider fileHandle
+  clkDivider :: (ClkDivider clkPeriod) <- mkClkDivider fileHandle
 
   addRules $
     rules

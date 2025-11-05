@@ -4,8 +4,7 @@ import Deserializer
 import Serializer
 import CBindings
 
-type FCLK = 25000000
-type BAUD = 9600
+type UART_CLK_PERIOD = 2604 -- for 9600 BAUD at 25MHz
 
 interface ITop = {
   ftdi_rxd :: Bit 1           {-# always_ready  #-}
@@ -16,8 +15,8 @@ interface ITop = {
 mkTop :: Module ITop
 mkTop = do
   fileHandle   :: Handle <- openFile "compile.log" WriteMode
-  deserializer :: IDeserializer FCLK BAUD <- mkDeserialize fileHandle
-  serializer   :: ISerializer FCLK BAUD <- mkSerialize fileHandle
+  deserializer :: IDeserializer UART_CLK_PERIOD <- mkDeserialize fileHandle
+  serializer   :: ISerializer UART_CLK_PERIOD <- mkSerialize fileHandle
   recentByte   :: Reg (Bit 8) <- mkReg 0
   messageM $ "Hallo!!" + (realToString 5)
 
