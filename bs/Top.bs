@@ -1,9 +1,7 @@
 package Top(mkTop, ITop(..)) where
 
 import Deserializer
-import Core
 import Serializer
-import BRAM
 import CBindings
 
 type FCLK = 25000000
@@ -20,41 +18,28 @@ mkTop = do
   fileHandle   :: Handle <- openFile "compile.log" WriteMode
   deserializer :: IDeserializer FCLK BAUD <- mkDeserialize fileHandle
   serializer   :: ISerializer FCLK BAUD <- mkSerialize fileHandle
-  core         :: Core FCLK <- mkCore
-  persistLed  :: Reg (Bit 8) <- mkReg 0
+  recentByte   :: Reg (Bit 8) <- mkReg 0
   messageM $ "Hallo!!" + (realToString 5)
 
-  -- refactor such that the following rules are let-bound to 
-  -- `attachIO` identifier
   addRules $
     rules
-      "coreLedO" : when True ==>
-        persistLed := core.getLed
-
-      "coreCharDeviceO" : when True ==>
-        serializer.putBit8 core.getChar
-
-      "coreCharDeviceO" : when True ==>
-        serializer.putBit8 core.getChar
-
-      "coreCharDeviceI" : when True ==>
-        core.putChar deserializer.get
+      "loopback" : when True ==>
+        do
+          let byte = deserializer.get
+          recentByte := byte
+          serializer.putBit8 byte
 
   return $
     interface ITop
       ftdi_rxd =  serializer.bitLineOut
-      ftdi_txd bitIn =  
+      ftdi_txd bitIn =
            do
              deserializer.putBitIn bitIn
-      led =  persistLed
+      led =  recentByte
 
 mkSim :: Module Empty
 mkSim = do
-  let cfg          :: BRAM_Configure = defaultValue
-
-  count            :: Reg (UInt 3) <- mkReg 0;
   initCFunctions :: Reg Bool <- mkReg False;
-  core             :: Core FCLK <- mkCore;
 
   addRules $
     rules
@@ -63,12 +48,11 @@ mkSim = do
           initTerminal
           setupSigintHandler
           initCFunctions := True
-      "coreCharDeviceO":  when True ==>
+
+      "loopback":  when (isCharAvailable == 1) ==>
         do
-          writeCharToTerminal core.getChar
-      "coreCharDeviceI":  when (isCharAvailable == 1) ==>
-        do
-          core.putChar getCharFromTerminal
+          writeCharToTerminal getCharFromTerminal
+
       "endSim":  when wasCtrlCReceived ==>
         do
           restoreTerminal
