@@ -3,6 +3,7 @@ package Top(mkTop, ITop(..)) where
 import Deserializer
 import Serializer
 import CBindings
+import BusTypes
 
 type UART_CLK_PERIOD = 2604 -- for 9600 BAUD at 25MHz
 

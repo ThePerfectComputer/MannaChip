@@ -1,0 +1,24 @@
+package BusTypes(
+    Addr,
+    TransactionData(..),
+    TransactionRequest(..)) where
+
+type Addr = UInt 64
+
+data BusError = MisAligned Addr
+                deriving (Bits, FShow, Eq)
+
+data TransactionData = Byte (UInt 8)
+                     | HalfWord (UInt 16)
+                     | Word (UInt 32)
+                     | DoubleWord (UInt 64)
+                     | QuadWord (UInt 128)
+                     deriving (Bits, FShow, Eq)
+
+data TransactionRequest = ReadRequest  Addr
+                        | WriteRequest Addr TransactionData
+                        deriving (Bits, FShow, Eq)
+
+data TransactionResponse = ReadResponse  (Either BusError TransactionData)
+                         | WriteResponse (Either BusError ())
+                         deriving (Bits, FShow, Eq)
