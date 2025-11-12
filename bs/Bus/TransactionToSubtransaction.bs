@@ -1,0 +1,48 @@
+package TransactionToSubtransaction(
+    Len, Offset, DeviceLine,
+    Subtransaction(..),
+    TransactionToSubtransactionAdapter(..),
+    mkTransactionToSubtransactionAdapter) where
+
+import SpecialFIFOs
+import FIFO
+import BusTypes
+import TagEngine
+
+type Len        = UInt 5 -- a subtransaction can by up to 16 bytes long in length
+type Offset     = UInt 4 -- and can be offset by up to 15 bytes
+type DeviceLine = Addr   -- address of device line from which for given subtransaction
+
+data Subtransaction = NonTerminating    DeviceLine Offset Len
+                    | Terminating       DeviceLine Offset Len
+                    deriving (Bits, FShow, Eq)
+
+interface (TransactionToSubtransactionAdapter:: # -> *) inFlightTransactions =
+    enqueueTransaction      :: (TaggedTransactionRequest inFlightTransactions) -> Action
+    dequeueSubTransaction   :: ActionValue Subtransaction
+    currentTransactionTag   :: MkTagType inFlightTransactions
+
+mkTransactionToSubtransactionAdapter :: Module (
+    TransactionToSubtransactionAdapter inFlightTransactions
+    )
+mkTransactionToSubtransactionAdapter = do
+
+    transactionQueue :: FIFO (TaggedTransactionRequest inFlightTransactions)
+    transactionQueue <- mkBypassFIFO
+
+    subTransactionQueue :: FIFO Subtransaction
+    subTransactionQueue <- mkBypassFIFO
+
+    return $
+        interface TransactionToSubtransactionAdapter
+            enqueueTransaction  :: (TaggedTransactionRequest inFlightTransactions) -> Action
+            enqueueTransaction taggedTransactionRequest =
+                transactionQueue.enq taggedTransactionRequest
+
+            dequeueSubTransaction   :: ActionValue Subtransaction
+            dequeueSubTransaction = do
+                subTransactionQueue.deq
+                return subTransactionQueue.first
+
+            currentTransactionTag   :: MkTagType inFlightTransactions
+            currentTransactionTag = transactionQueue.first.tag

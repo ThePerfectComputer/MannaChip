@@ -1,0 +1,3 @@
+package TagEngine(MkTagType) where
+
+type MkTagType inFlightTransactions = UInt (TLog inFlightTransactions)

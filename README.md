@@ -17,3 +17,7 @@ make -C ulx3s_fpga/
 # TODO
  - [ ] add nix flake
  - [ ] add instruction on how to use nix flake
+ - [ ] confirm (TLog 5) evaluates to 3 and (TLog 4) evaluates to 2 etc
+ - [ ] address shadowing warnings in `Top.bs`
+ - [ ] work on creating response assembler
+ - [ ] `currentTransactionTag` should be guarded

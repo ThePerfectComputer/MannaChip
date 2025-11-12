@@ -1,7 +1,13 @@
 package BusTypes(
     Addr,
+    BusError(..),
     TransactionData(..),
-    TransactionRequest(..)) where
+    TransactionRequest(..),
+    TransactionResponse(..),
+    TaggedTransactionRequest(..),
+    TaggedTransactionResponse(..)) where
+
+import TagEngine
 
 type Addr = UInt 64
 
@@ -22,3 +28,15 @@ data TransactionRequest = ReadRequest  Addr
 data TransactionResponse = ReadResponse  (Either BusError TransactionData)
                          | WriteResponse (Either BusError ())
                          deriving (Bits, FShow, Eq)
+
+struct TaggedTransactionRequest inFlightTransactions =
+    { tag       :: MkTagType inFlightTransactions;
+      request   :: TransactionRequest
+    }
+    deriving (Bits, FShow, Eq)
+
+struct TaggedTransactionResponse inFlightTransactions =
+    { tag       :: MkTagType inFlightTransactions;
+      response  :: TransactionResponse
+    }
+    deriving (Bits, FShow, Eq)

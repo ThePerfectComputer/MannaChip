@@ -25,5 +25,8 @@ experiments/bram/*.cxx
 experiments/bram/*.h
 experiments/bram/simBRAM
 
+# python environments
+.env
+
 *.o
 .vscode

@@ -4,6 +4,7 @@ import Deserializer
 import Serializer
 import CBindings
 import BusTypes
+import TransactionToSubtransaction
 
 type UART_CLK_PERIOD = 2604 -- for 9600 BAUD at 25MHz
 

@@ -6,7 +6,7 @@ DPI_LIB = $(BUILD)/libdpi.so
 TOP_MODULE = mkTop
 TOP_FILE = bs/Top.bs
 
-BSV_PATH = ./bs:./bsv
+BSV_PATH = ./bs:./bs/Bus:./bsv
 BSV_FLAGS = -p +:$(BSV_PATH) -bdir $(BUILD) -vdir $(BUILD) -simdir $(BUILD)
 VERILOG_FLAGS = $(BSV_FLAGS) -verilog -u -g $(TOP_MODULE)
 
