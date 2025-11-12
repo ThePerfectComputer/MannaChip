@@ -6,6 +6,7 @@ package TransactionToSubtransaction(
 
 import SpecialFIFOs
 import FIFO
+import Words
 import BusTypes
 import TagEngine
 
@@ -17,15 +18,44 @@ data Subtransaction = NonTerminating    DeviceLine Offset Len
                     | Terminating       DeviceLine Offset Len
                     deriving (Bits, FShow, Eq)
 
+nextSubtransaction :: Addr -> Addr -> WordSize -> Subtransaction
+nextSubtransaction currAddr endAddr deviceLineSize =
+    let
+        shiftAmt :: Integer
+        shiftAmt = wordSizeToAddrShiftAmt deviceLineSize
+
+        lineAddrDeviceSpace :: DeviceLine
+        lineAddrDeviceSpace = currAddr >> shiftAmt
+
+        lineAddrLeftBoundBusSpace :: Addr
+        lineAddrLeftBoundBusSpace = lineAddrDeviceSpace << shiftAmt
+
+        lineAddrRightBoundBusSpace :: Addr
+        lineAddrRightBoundBusSpace = (lineAddrDeviceSpace + 1) << shiftAmt
+
+        offset :: Offset
+        offset = truncate $ currAddr - lineAddrLeftBoundBusSpace
+
+        len :: Len
+        len = truncate $
+            min (endAddr - currAddr) (lineAddrRightBoundBusSpace - currAddr)
+
+        terminating :: Bool
+        terminating = endAddr == currAddr + (zeroExtend len)
+    in
+        case terminating of
+            False -> NonTerminating lineAddrDeviceSpace offset len
+            True  -> Terminating lineAddrDeviceSpace offset len
+
 interface (TransactionToSubtransactionAdapter:: # -> *) inFlightTransactions =
     enqueueTransaction      :: (TaggedTransactionRequest inFlightTransactions) -> Action
     dequeueSubTransaction   :: ActionValue Subtransaction
     currentTransactionTag   :: MkTagType inFlightTransactions
 
-mkTransactionToSubtransactionAdapter :: Module (
-    TransactionToSubtransactionAdapter inFlightTransactions
-    )
-mkTransactionToSubtransactionAdapter = do
+mkTransactionToSubtransactionAdapter ::
+    WordSize ->
+    Module (TransactionToSubtransactionAdapter inFlightTransactions)
+mkTransactionToSubtransactionAdapter deviceLineSize = do
 
     transactionQueue :: FIFO (TaggedTransactionRequest inFlightTransactions)
     transactionQueue <- mkBypassFIFO
