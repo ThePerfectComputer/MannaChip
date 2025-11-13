@@ -12,26 +12,35 @@ import TagEngine
 
 type Len        = UInt 5 -- a subtransaction can by up to 16 bytes long in length
 type Offset     = UInt 4 -- and can be offset by up to 15 bytes
-type DeviceLine = Addr   -- address of device line from which for given subtransaction
+type DeviceLine = Addr   -- address of device line for given subtransaction
 
 data Subtransaction = NonTerminating    DeviceLine Offset Len
                     | Terminating       DeviceLine Offset Len
                     deriving (Bits, FShow, Eq)
 
-nextSubtransaction :: Addr -> Addr -> WordSize -> Subtransaction
-nextSubtransaction currAddr endAddr deviceLineSize =
+subtransactionLen :: Subtransaction -> Len
+subtransactionLen (NonTerminating _ _ len) = len
+subtransactionLen (Terminating    _ _ len) = len
+
+nextSubtransaction :: Addr -> Addr -> (Maybe Addr) -> WordSize -> Subtransaction
+nextSubtransaction startAddr endAddr previousAddr deviceLineSize =
     let
         shiftAmt :: Integer
         shiftAmt = wordSizeToAddrShiftAmt deviceLineSize
 
-        lineAddrDeviceSpace :: DeviceLine
-        lineAddrDeviceSpace = currAddr >> shiftAmt
+        currAddr :: Addr
+        currAddr = case previousAddr of
+            Just addr -> addr
+            Nothing -> startAddr
+
+        currLineAddrDeviceSpace :: DeviceLine
+        currLineAddrDeviceSpace = currAddr >> shiftAmt
 
         lineAddrLeftBoundBusSpace :: Addr
-        lineAddrLeftBoundBusSpace = lineAddrDeviceSpace << shiftAmt
+        lineAddrLeftBoundBusSpace = currLineAddrDeviceSpace << shiftAmt
 
         lineAddrRightBoundBusSpace :: Addr
-        lineAddrRightBoundBusSpace = (lineAddrDeviceSpace + 1) << shiftAmt
+        lineAddrRightBoundBusSpace = (currLineAddrDeviceSpace + 1) << shiftAmt
 
         offset :: Offset
         offset = truncate $ currAddr - lineAddrLeftBoundBusSpace
@@ -44,13 +53,15 @@ nextSubtransaction currAddr endAddr deviceLineSize =
         terminating = endAddr == currAddr + (zeroExtend len)
     in
         case terminating of
-            False -> NonTerminating lineAddrDeviceSpace offset len
-            True  -> Terminating lineAddrDeviceSpace offset len
+            False -> NonTerminating currLineAddrDeviceSpace offset len
+            True  -> Terminating currLineAddrDeviceSpace offset len
 
 interface (TransactionToSubtransactionAdapter:: # -> *) inFlightTransactions =
-    enqueueTransaction      :: (TaggedTransactionRequest inFlightTransactions) -> Action
-    dequeueSubTransaction   :: ActionValue Subtransaction
-    currentTransactionTag   :: MkTagType inFlightTransactions
+    {
+    enqueueTransaction      :: (TaggedTransactionRequest inFlightTransactions) -> Action;
+    dequeueSubTransaction   :: ActionValue Subtransaction;
+    currentTransactionTag   :: MkTagType inFlightTransactions;
+    }
 
 mkTransactionToSubtransactionAdapter ::
     WordSize ->
@@ -62,6 +73,40 @@ mkTransactionToSubtransactionAdapter deviceLineSize = do
 
     subTransactionQueue :: FIFO Subtransaction
     subTransactionQueue <- mkBypassFIFO
+
+    previousAddr :: Reg (Maybe Addr)
+    previousAddr <- mkReg Nothing
+
+    let startAddr :: Addr
+        startAddr =  transactionRequestToAddr $ transactionQueue.first.request
+
+        endAddr :: Addr
+        endAddr = startAddr + (fromInteger $ wordSizeNumBytes deviceLineSize)
+
+    addRules $
+      rules
+        "nextSubtransaction" : when True ==>
+            do
+                let
+                    subtransaction :: Subtransaction
+                    subtransaction =
+                        nextSubtransaction startAddr endAddr previousAddr deviceLineSize
+
+                    subtransactionLenVal :: Addr
+                    subtransactionLenVal = zeroExtend $ subtransactionLen subtransaction
+
+                subTransactionQueue.enq subtransaction
+
+                case subtransaction of
+                    NonTerminating _ _ _ ->
+                        do
+                            previousAddr := case previousAddr of
+                                Just addr -> Just $ addr + subtransactionLenVal
+                                Nothing   -> Just $ startAddr + subtransactionLenVal
+                    Terminating _ _ _ ->
+                        do
+                            previousAddr := Nothing
+                            transactionQueue.deq
 
     return $
         interface TransactionToSubtransactionAdapter

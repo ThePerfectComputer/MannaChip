@@ -2,7 +2,7 @@ package BusTypes(
     Addr,
     BusError(..),
     TransactionData(..),
-    TransactionRequest(..),
+    TransactionRequest(..), transactionRequestToAddr,
     TransactionResponse(..),
     TaggedTransactionRequest(..),
     TaggedTransactionResponse(..)) where
@@ -28,6 +28,10 @@ data TransactionRequest = ReadRequest  Addr
 data TransactionResponse = ReadResponse  (Either BusError TransactionData)
                          | WriteResponse (Either BusError ())
                          deriving (Bits, FShow, Eq)
+
+transactionRequestToAddr :: TransactionRequest -> Addr
+transactionRequestToAddr (ReadRequest addr) = addr
+transactionRequestToAddr (WriteRequest addr _) = addr
 
 struct TaggedTransactionRequest inFlightTransactions =
     { tag       :: MkTagType inFlightTransactions;
