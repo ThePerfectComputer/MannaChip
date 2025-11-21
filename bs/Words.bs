@@ -5,7 +5,7 @@ package Words(
 
 data WordSize = Byte
               | HalfWord
-              | Word
+              | FullWord
               | DoubleWord
               | QuadWord
               deriving (Bits, FShow, Eq)
@@ -13,13 +13,13 @@ data WordSize = Byte
 wordSizeNumBytes :: WordSize -> Integer
 wordSizeNumBytes Byte          = 1
 wordSizeNumBytes HalfWord      = 2
-wordSizeNumBytes Word          = 4
+wordSizeNumBytes FullWord      = 4
 wordSizeNumBytes DoubleWord    = 8
 wordSizeNumBytes QuadWord      = 16
 
 wordSizeToAddrShiftAmt :: WordSize -> Integer
 wordSizeToAddrShiftAmt Byte         = 0
 wordSizeToAddrShiftAmt HalfWord     = 1
-wordSizeToAddrShiftAmt Word         = 2
+wordSizeToAddrShiftAmt FullWord     = 2
 wordSizeToAddrShiftAmt DoubleWord   = 3
 wordSizeToAddrShiftAmt QuadWord     = 4

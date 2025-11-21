@@ -1,0 +1,57 @@
+-- make sim TOP_FILE=bs/Bus/TestTransactionToSubtransaction.bs TOP_MODULE=mkTestTransactionToSubtransaction;
+-- ./build/mkSim
+package TestTransactionToSubtransaction(
+    mkTestTransactionToSubtransaction
+) where
+
+import ActionSeq
+import TransactionToSubtransaction
+import BusTypes
+import Words
+
+type InFlightTransactions = 4
+
+transaction1 :: (TaggedTransactionRequest InFlightTransactions)
+transaction1 = TaggedTransactionRequest {
+    tag = 2;
+    request = ReadRequest 0x2 Words.FullWord
+}
+
+mkTestTransactionToSubtransaction :: Module Empty
+mkTestTransactionToSubtransaction = do
+    let
+        deviceLineSize :: WordSize
+        deviceLineSize =  Words.HalfWord
+
+    adapter :: TransactionToSubtransactionAdapter InFlightTransactions
+    adapter <- mkTransactionToSubtransactionAdapter deviceLineSize
+
+    x :: Reg (Bit 32)
+    x <- mkReg 0
+
+    cycle :: Reg (Bit 32)
+    cycle <- mkReg 0
+
+    addRules $
+        rules
+
+            when (cycle == 0) ==>
+                do
+                    adapter.enqueueTransaction transaction1
+
+            when (True) ==>
+                do
+                    subtransaction :: Subtransaction
+                    subtransaction <- adapter.dequeueSubTransaction
+                    $display (fshow subtransaction)
+
+            when (True) ==>
+                do
+                    cycle := cycle + 1
+                    $display "CYCLE: " cycle
+
+            when (cycle == 10) ==>
+                do
+                    $finish
+
+    return $ interface Empty { }

@@ -10,7 +10,7 @@ import Words
 import BusTypes
 import TagEngine
 
-type Len        = UInt 5 -- a subtransaction can by up to 16 bytes long in length
+type Len        = UInt 5 -- a subtransaction can be up to 16 bytes long in length
 type Offset     = UInt 4 -- and can be offset by up to 15 bytes
 type DeviceLine = Addr   -- address of device line for given subtransaction
 
@@ -53,8 +53,23 @@ nextSubtransaction startAddr endAddr previousAddr deviceLineSize =
         terminating = endAddr == currAddr + (zeroExtend len)
     in
         case terminating of
-            False -> NonTerminating currLineAddrDeviceSpace offset len
             True  -> Terminating currLineAddrDeviceSpace offset len
+            False -> NonTerminating currLineAddrDeviceSpace offset len
+
+transactionRequestToAddr :: TransactionRequest -> Addr
+transactionRequestToAddr (ReadRequest addr _) = addr
+transactionRequestToAddr (WriteRequest addr _) = addr
+
+transactionDataToWordSize :: TransactionData -> WordSize
+transactionDataToWordSize (Byte _)          = Words.Byte
+transactionDataToWordSize (HalfWord _)      = Words.HalfWord
+transactionDataToWordSize (FullWord _)      = Words.FullWord
+transactionDataToWordSize (DoubleWord _)    = Words.DoubleWord
+transactionDataToWordSize (QuadWord _)      = Words.QuadWord
+
+transactionRequestToWordSize :: TransactionRequest -> WordSize
+transactionRequestToWordSize (ReadRequest  _ s) = s
+transactionRequestToWordSize (WriteRequest _ d) = transactionDataToWordSize d
 
 interface (TransactionToSubtransactionAdapter:: # -> *) inFlightTransactions =
     {
@@ -81,7 +96,10 @@ mkTransactionToSubtransactionAdapter deviceLineSize = do
         startAddr =  transactionRequestToAddr $ transactionQueue.first.request
 
         endAddr :: Addr
-        endAddr = startAddr + (fromInteger $ wordSizeNumBytes deviceLineSize)
+        endAddr = startAddr + (
+            fromInteger $ wordSizeNumBytes $
+            transactionRequestToWordSize transactionQueue.first.request
+            )
 
     addRules $
       rules

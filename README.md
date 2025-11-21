@@ -26,3 +26,4 @@ make -C ulx3s_fpga/
  - [ ] address shadowing warnings in `Top.bs`
  - [ ] work on creating response assembler
  - [ ] `currentTransactionTag` should be guarded
+ - [ ] subtransaction should also specify read or write
