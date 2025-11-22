@@ -14,13 +14,22 @@ type Len        = UInt 5 -- a subtransaction can be up to 16 bytes long in lengt
 type Offset     = UInt 4 -- and can be offset by up to 15 bytes
 type DeviceLine = Addr   -- address of device line for given subtransaction
 
-data Subtransaction = NonTerminating    DeviceLine Offset Len
-                    | Terminating       DeviceLine Offset Len
-                    deriving (Bits, FShow, Eq)
+data Subtransaction = NonTerminating {
+                        deviceLine  :: DeviceLine;
+                        offset      :: Offset;
+                        len         :: Len
+                        }
+                     | Terminating {
+                        deviceLine  :: DeviceLine;
+                        offset      :: Offset;
+                        len         :: Len
+                        }
+                     deriving (Bits, FShow, Eq)
+
 
 subtransactionLen :: Subtransaction -> Len
-subtransactionLen (NonTerminating _ _ len) = len
-subtransactionLen (Terminating    _ _ len) = len
+subtransactionLen (NonTerminating {deviceLine; offset; len}) = len
+subtransactionLen (Terminating    {deviceLine; offset; len}) = len
 
 nextSubtransaction :: Addr -> Addr -> (Maybe Addr) -> WordSize -> Subtransaction
 nextSubtransaction startAddr endAddr previousAddr deviceLineSize =
@@ -53,8 +62,8 @@ nextSubtransaction startAddr endAddr previousAddr deviceLineSize =
         terminating = endAddr == currAddr + (zeroExtend len)
     in
         case terminating of
-            True  -> Terminating currLineAddrDeviceSpace offset len
-            False -> NonTerminating currLineAddrDeviceSpace offset len
+            True  -> Terminating {deviceLine = currLineAddrDeviceSpace; offset=offset; len=len}
+            False -> NonTerminating {deviceLine = currLineAddrDeviceSpace; offset=offset; len=len}
 
 transactionRequestToAddr :: TransactionRequest -> Addr
 transactionRequestToAddr (ReadRequest addr _) = addr
@@ -116,12 +125,12 @@ mkTransactionToSubtransactionAdapter deviceLineSize = do
                 subTransactionQueue.enq subtransaction
 
                 case subtransaction of
-                    NonTerminating _ _ _ ->
+                    NonTerminating _ ->
                         do
                             previousAddr := case previousAddr of
                                 Just addr -> Just $ addr + subtransactionLenVal
                                 Nothing   -> Just $ startAddr + subtransactionLenVal
-                    Terminating _ _ _ ->
+                    Terminating _ ->
                         do
                             previousAddr := Nothing
                             transactionQueue.deq

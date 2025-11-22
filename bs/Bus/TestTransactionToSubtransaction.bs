@@ -1,7 +1,7 @@
--- make sim TOP_FILE=bs/Bus/TestTransactionToSubtransaction.bs TOP_MODULE=mkTestTransactionToSubtransaction;
+-- make sim TOP_FILE=bs/Bus/TestTransactionToSubtransaction.bs TOP_MODULE=mkTest1;
 -- ./build/mkSim
 package TestTransactionToSubtransaction(
-    mkTestTransactionToSubtransaction
+    mkTest1, mkTest2
 ) where
 
 import ActionSeq
@@ -11,47 +11,62 @@ import Words
 
 type InFlightTransactions = 4
 
-transaction1 :: (TaggedTransactionRequest InFlightTransactions)
-transaction1 = TaggedTransactionRequest {
-    tag = 2;
-    request = ReadRequest 0x2 Words.FullWord
-}
+mkTest1 :: Module Empty
+mkTest1 = do
+    let transaction :: (TaggedTransactionRequest InFlightTransactions)
+        transaction = TaggedTransactionRequest {
+            tag = 2;
+            request = ReadRequest 0x2 Words.FullWord
+            }
 
-mkTestTransactionToSubtransaction :: Module Empty
-mkTestTransactionToSubtransaction = do
-    let
-        deviceLineSize :: WordSize
-        deviceLineSize =  Words.HalfWord
+    mkTransactionTester transaction Words.HalfWord
 
+mkTest2 :: Module Empty
+mkTest2 = do
+    let transaction :: (TaggedTransactionRequest InFlightTransactions)
+        transaction = TaggedTransactionRequest {
+            tag = 2;
+            request = ReadRequest 0x2 Words.FullWord
+            }
+
+    mkTransactionTester transaction Words.QuadWord
+
+mkTransactionTester :: (TaggedTransactionRequest InFlightTransactions)
+                    -> WordSize
+                    -> Module Empty
+mkTransactionTester taggedTransactionRequest lineSize = do
     adapter :: TransactionToSubtransactionAdapter InFlightTransactions
-    adapter <- mkTransactionToSubtransactionAdapter deviceLineSize
-
-    x :: Reg (Bit 32)
-    x <- mkReg 0
+    adapter <- mkTransactionToSubtransactionAdapter lineSize
 
     cycle :: Reg (Bit 32)
     cycle <- mkReg 0
+
+    done :: Reg (Bool)
+    done <- mkReg False
 
     addRules $
         rules
 
             when (cycle == 0) ==>
                 do
-                    adapter.enqueueTransaction transaction1
+                    adapter.enqueueTransaction taggedTransactionRequest
 
             when (True) ==>
                 do
                     subtransaction :: Subtransaction
                     subtransaction <- adapter.dequeueSubTransaction
+
                     $display (fshow subtransaction)
+
+                    case subtransaction of
+                        Terminating _ -> done := True
+                        _ -> action {}
 
             when (True) ==>
                 do
                     cycle := cycle + 1
                     $display "CYCLE: " cycle
 
-            when (cycle == 10) ==>
+            when (done) ==>
                 do
                     $finish
-
-    return $ interface Empty { }
